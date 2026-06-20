@@ -1535,7 +1535,7 @@
             margin-bottom: 8px;
         }
         
-        #legalFooterMenu a {
+        #legalFooterMenu span {
             color: #b0c4de;
             font-weight: 600;
             font-size: 13px;
@@ -1544,7 +1544,7 @@
             transition: all 0.2s ease;
         }
         
-        #legalFooterMenu a:hover {
+        #legalFooterMenu span:hover {
             color: #6ee7b7;
             text-decoration-color: #6ee7b7;
         }
@@ -2338,7 +2338,7 @@
         }
 
         // ==========================================
-        // FETCH DATA MITRA DINAMIS & SETTING GLOBAL
+        // FETCH DATA MITRA DINAMIS
         // ==========================================
         const scriptURL = SETTING_SCRIPT_URL; // Gunakan URL dari atas
         let allMitraData = [];
@@ -2358,15 +2358,6 @@
                 } else {
                     container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Belum ada mitra yang bergabung.</div>`;
                 }
-
-                // Ambil data legal_settings dari admin super (toko yang diakses)
-                // Karena ini index global, kita bisa mengasumsikan data legal super admin
-                // atau data dari pengaturan global jika Anda punya.
-                // Untuk sementara, kita asumsikan data legal bisa diambil dari setting global:
-                if (res.app_settings && res.app_settings.legal_settings) {
-                    renderLegalFooter(res.app_settings.legal_settings);
-                }
-
             } catch (error) {
                 console.error("Gagal memuat mitra:", error);
                 container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Gagal memuat daftar mitra.</div>`;
@@ -2402,43 +2393,52 @@
         }
 
         // ==========================================
-        // FUNGSI RENDER MENU LEGAL DI FOOTER
+        // FUNGSI RENDER MENU LEGAL DI FOOTER (BARU)
         // ==========================================
-        function renderLegalFooter(legalDataString) {
+        function renderLegalFooter() {
             try {
-                if (!legalDataString || legalDataString === '') return;
-                
-                const legal = JSON.parse(legalDataString);
-                
+                // Tarik data langsung dari localStorage admin yang sedang aktif
+                let sessionUser = JSON.parse(localStorage.getItem('iMersWA_User'));
+                let legalDataString = sessionUser ? sessionUser.legal_settings : null;
+
                 const legalContainer = document.getElementById('legalFooterMenu');
                 const linkTos = document.getElementById('linkTos');
                 const linkPrivacy = document.getElementById('linkPrivacy');
 
+                // Jika data tidak ada, set default fallback
+                if (!legalDataString || legalDataString === '') {
+                    legalDataString = JSON.stringify({
+                        tos_active: 'on',
+                        tos_content: 'Syarat dan Ketentuan sedang diperbarui. Silakan isi di menu Pengaturan Toko.',
+                        privacy_active: 'on',
+                        privacy_content: 'Kebijakan Privasi sedang diperbarui. Silakan isi di menu Pengaturan Toko.'
+                    });
+                }
+                
+                const legal = JSON.parse(legalDataString);
                 let hasActiveLegal = false;
 
-                // Cek apakah Syarat & Ketentuan (TOS) Aktif
-                if (legal.tos_active === 'on' && legal.tos_content && legal.tos_content.trim() !== '') {
+                // Tampilkan TOS jika diset 'on'
+                if (legal.tos_active === 'on') {
                     linkTos.classList.remove('hidden');
                     linkTos.style.display = 'inline-block';
-                    linkTos.onclick = (e) => { 
-                        e.preventDefault(); 
-                        showLegalModal('Syarat & Ketentuan', legal.tos_content); 
+                    linkTos.onclick = () => { 
+                        showLegalModal('Syarat & Ketentuan', legal.tos_content || 'Belum ada konten.'); 
                     };
                     hasActiveLegal = true;
                 }
 
-                // Cek apakah Kebijakan Privasi (Privacy) Aktif
-                if (legal.privacy_active === 'on' && legal.privacy_content && legal.privacy_content.trim() !== '') {
+                // Tampilkan Privacy Policy jika diset 'on'
+                if (legal.privacy_active === 'on') {
                     linkPrivacy.classList.remove('hidden');
                     linkPrivacy.style.display = 'inline-block';
-                    linkPrivacy.onclick = (e) => { 
-                        e.preventDefault(); 
-                        showLegalModal('Kebijakan Privasi', legal.privacy_content); 
+                    linkPrivacy.onclick = () => { 
+                        showLegalModal('Kebijakan Privasi', legal.privacy_content || 'Belum ada konten.'); 
                     };
                     hasActiveLegal = true;
                 }
 
-                // Kalau ada minimal 1 yang aktif, tampilkan wadah (container) footernya
+                // Munculkan wadah jika ada menu yang aktif
                 if (hasActiveLegal) {
                     legalContainer.classList.remove('hidden');
                 }
@@ -2454,9 +2454,12 @@
             document.getElementById('legalModal').classList.add('is-open');
         }
 
-        // Jalankan fetch saat halaman selesai dimuat
+        // Jalankan fetch & panggil fungsi saat halaman selesai dimuat
         document.addEventListener("DOMContentLoaded", () => {
             loadMitra();
+            
+            // Panggil Fungsi Footer Legal
+            renderLegalFooter();
             
             // Auto-open modal jika dari halaman login mengklik "Daftar Gratis"
             const urlParams = new URLSearchParams(window.location.search);
