@@ -1526,29 +1526,6 @@
             text-align: center;
         }
 
-        /* MENU LEGAL (Otomatis Muncul Kalau Aktif) */
-        #legalFooterMenu {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-bottom: 8px;
-        }
-        
-        #legalFooterMenu span {
-            color: #b0c4de;
-            font-weight: 600;
-            font-size: 13px;
-            text-decoration: underline;
-            text-decoration-color: transparent;
-            transition: all 0.2s ease;
-        }
-        
-        #legalFooterMenu span:hover {
-            color: #6ee7b7;
-            text-decoration-color: #6ee7b7;
-        }
-
         .floating-wa {
             position: fixed;
             z-index: 60;
@@ -1680,6 +1657,7 @@
             <button class="mobile-toggle" aria-label="Buka menu">☰</button>
         </div>
 
+        <!-- MOBILE MENU CONTAINER -->
         <div id="mobileMenu" class="mobile-menu">
             <nav class="mobile-nav">
                 <a href="#fitur">Fitur</a>
@@ -1853,6 +1831,7 @@
                         <p>Pantau performa bisnis dengan laporan penjualan, pelanggan, produk terlaris, dan export Excel.</p>
                     </article>
 
+                    <!-- 3 FITUR UPDATE V5.1 -->
                     <article class="feature-card reveal">
                         <div class="icon-box" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(249, 115, 22, 0.30)); color: #ea580c;">🎯</div>
                         <h3>Ads Pixel Tracking</h3>
@@ -1874,6 +1853,7 @@
             </div>
         </section>
 
+        <!-- SECTION MITRA DINAMIS (TEASER 8 TOKO) -->
         <section class="mitra-section section" id="mitra">
             <div class="container">
                 <div class="section-head reveal">
@@ -1883,11 +1863,13 @@
                 </div>
 
                 <div id="mitraContainer" class="mitra-grid reveal">
+                    <!-- Loading Skeleton -->
                     <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">
                         <p>Memuat daftar mitra...</p>
                     </div>
                 </div>
 
+                <!-- Tombol Link Pindah ke Halaman Mitra -->
                 <div id="loadMoreContainer" style="display: none; text-align: center; margin-top: 40px;" class="reveal">
                     <a href="mitra.html" class="btn btn-secondary" style="border-radius: 99px; padding: 0 30px;">
                         Lihat Semua Mitra Kami →
@@ -2209,18 +2191,20 @@
         </svg>
     </a>
 
+    <!-- BAGIAN FOOTER STATIS (HARDCODE LINK) -->
     <footer class="footer">
         <div class="container">
             <p>© 2026 iMersWAstore. Karya Anak Bangsa untuk UMKM.</p>
             <p>Toko Online • POS Kasir • WhatsApp Automation</p>
             
-            <div id="legalFooterMenu" class="hidden" style="margin-top:12px; display:flex; gap:16px; justify-content:center;">
-                <span id="linkTos" class="hidden" style="color: #61dba5; font-size: 13px; cursor: pointer; font-weight: 600;">Syarat & Ketentuan</span>
-                <span id="linkPrivacy" class="hidden" style="color: #61dba5; font-size: 13px; cursor: pointer; font-weight: 600;">Kebijakan Privasi</span>
+            <div style="margin-top:12px; display:flex; gap:16px; justify-content:center;">
+                <a href="syarat.html" style="color: #61dba5; font-size: 13px; text-decoration: none;" class="hover:text-emerald-400 transition-colors">Syarat & Ketentuan</a>
+                <a href="privacy.html" style="color: #61dba5; font-size: 13px; text-decoration: none;" class="hover:text-emerald-400 transition-colors">Kebijakan Privasi</a>
             </div>
         </div>
     </footer>
 
+    <!-- MODAL PENDAFTARAN (NON-TAILWIND BIAR GAK BENTROK) -->
     <div id="registerModal" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-box" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">✕</button>
@@ -2264,16 +2248,6 @@
                     <span id="btnText">Daftar & Buat Toko</span>
                 </button>
             </form>
-        </div>
-    </div>
-
-    <div id="legalModal" class="modal-overlay" onclick="document.getElementById('legalModal').classList.remove('is-open')">
-        <div class="modal-box" style="max-width: 600px;" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="document.getElementById('legalModal').classList.remove('is-open')">✕</button>
-            <h3 id="legalModalTitle">Informasi Legal</h3>
-            <div id="legalModalContent" style="margin-top: 20px; font-size: 14px; color: #516077; max-height: 60vh; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; text-align: left;">
-                </div>
-            <button onclick="document.getElementById('legalModal').classList.remove('is-open')" class="btn btn-secondary" style="width: 100%; margin-top: 24px;">Tutup</button>
         </div>
     </div>
 
@@ -2392,74 +2366,9 @@
             }
         }
 
-        // ==========================================
-        // FUNGSI RENDER MENU LEGAL DI FOOTER (BARU)
-        // ==========================================
-        function renderLegalFooter() {
-            try {
-                // Tarik data langsung dari localStorage admin yang sedang aktif
-                let sessionUser = JSON.parse(localStorage.getItem('iMersWA_User'));
-                let legalDataString = sessionUser ? sessionUser.legal_settings : null;
-
-                const legalContainer = document.getElementById('legalFooterMenu');
-                const linkTos = document.getElementById('linkTos');
-                const linkPrivacy = document.getElementById('linkPrivacy');
-
-                // Jika data tidak ada, set default fallback
-                if (!legalDataString || legalDataString === '') {
-                    legalDataString = JSON.stringify({
-                        tos_active: 'on',
-                        tos_content: 'Syarat dan Ketentuan sedang diperbarui. Silakan isi di menu Pengaturan Toko.',
-                        privacy_active: 'on',
-                        privacy_content: 'Kebijakan Privasi sedang diperbarui. Silakan isi di menu Pengaturan Toko.'
-                    });
-                }
-                
-                const legal = JSON.parse(legalDataString);
-                let hasActiveLegal = false;
-
-                // Tampilkan TOS jika diset 'on'
-                if (legal.tos_active === 'on') {
-                    linkTos.classList.remove('hidden');
-                    linkTos.style.display = 'inline-block';
-                    linkTos.onclick = () => { 
-                        showLegalModal('Syarat & Ketentuan', legal.tos_content || 'Belum ada konten.'); 
-                    };
-                    hasActiveLegal = true;
-                }
-
-                // Tampilkan Privacy Policy jika diset 'on'
-                if (legal.privacy_active === 'on') {
-                    linkPrivacy.classList.remove('hidden');
-                    linkPrivacy.style.display = 'inline-block';
-                    linkPrivacy.onclick = () => { 
-                        showLegalModal('Kebijakan Privasi', legal.privacy_content || 'Belum ada konten.'); 
-                    };
-                    hasActiveLegal = true;
-                }
-
-                // Munculkan wadah jika ada menu yang aktif
-                if (hasActiveLegal) {
-                    legalContainer.classList.remove('hidden');
-                }
-            } catch (e) {
-                console.error("Gagal memuat pengaturan legal:", e);
-            }
-        }
-
-        // Fungsi pembuka Pop-up Modal Legal
-        function showLegalModal(title, content) {
-            document.getElementById('legalModalTitle').innerText = title;
-            document.getElementById('legalModalContent').innerText = content;
-            document.getElementById('legalModal').classList.add('is-open');
-        }
-
-        // Jalankan fetch & panggil fungsi saat halaman selesai dimuat
+        // Jalankan fetch saat halaman selesai dimuat
         document.addEventListener("DOMContentLoaded", () => {
             loadMitra();
-            
-            // Panggil Fungsi Footer Legal
-            renderLegalFooter();
             
             // Auto-open modal jika dari halaman login mengklik "Daftar Gratis"
             const urlParams = new URLSearchParams(window.location.search);
