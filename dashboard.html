@@ -2135,7 +2135,8 @@
                 }
             }
 
-            let waNumber = window.upgradeAdminInfo?.wa_number;
+            // FIX: Hapus "window." agar variabel terbaca dengan benar
+            let waNumber = upgradeAdminInfo?.wa_number;
 
             if (!waNumber) {
                 alert("Gagal: Admin Pusat belum mengatur Nomor WhatsApp penerima pembayaran!");
