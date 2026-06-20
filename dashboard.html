@@ -105,10 +105,10 @@
         <!-- Logo Brand Dinamis -->
         <div class="h-16 flex items-center justify-between px-6 border-b border-slate-100 cursor-pointer">
             <div class="flex items-center" onclick="window.location.href='index.html'">
-                <div id="sidebarBrandLogo" class="w-8 h-8 bg-emerald-500 text-white p-1.5 rounded-lg mr-2 flex items-center justify-center overflow-hidden shrink-0">
-                    <i data-lucide="store" class="w-5 h-5"></i>
+                <div id="sidebarBrandLogo" class="h-8 flex items-center justify-center overflow-hidden shrink-0 mr-2">
+                    <img src="https://imersnesia.com/wp-content/uploads/2026/06/logo-teks-imerswastore-1.png" class="h-full w-auto object-contain" alt="iMersWAStore">
                 </div>
-                <span id="sidebarBrandName" class="font-bold text-lg tracking-tight truncate">iMers<span class="text-emerald-500">WA</span></span>
+                <span id="sidebarBrandName" class="font-bold text-lg tracking-tight truncate hidden"></span>
             </div>
             <!-- Tombol Close (Mobile Only) -->
             <button id="closeSidebarBtn" class="lg:hidden text-slate-400 hover:text-slate-600 focus:outline-none">
@@ -1452,11 +1452,11 @@
             sidebarBrandNameEl.innerText = currentUser.nama_toko || 'iMersWAstore';
 
             if (currentUser.logo && currentUser.logo !== '') {
-                sidebarBrandLogoEl.innerHTML = `<img src="${currentUser.logo}" class="w-full h-full object-cover">`;
-                sidebarBrandLogoEl.classList.remove('p-1.5', 'bg-emerald-500'); 
+                sidebarBrandLogoEl.innerHTML = `<img src="${currentUser.logo}" class="w-10 h-10 object-cover rounded-lg">`;
+                sidebarBrandNameEl.classList.remove('hidden'); 
             } else {
-                sidebarBrandLogoEl.innerHTML = `<i data-lucide="store" class="w-5 h-5 text-white"></i>`;
-                sidebarBrandLogoEl.classList.add('p-1.5', 'bg-emerald-500');
+                sidebarBrandLogoEl.innerHTML = `<img src="https://imersnesia.com/wp-content/uploads/2026/06/logo-teks-imerswastore-1.png" class="h-8 w-auto object-contain" alt="iMersWAStore">`;
+                sidebarBrandNameEl.classList.add('hidden');
             }
 
             // Atur Avatar Info
@@ -2158,9 +2158,9 @@
             message += `Harga: *Rp ${parseInt(planPrice).toLocaleString('id-ID')}*\n\n`;
             message += `Berikut saya lampirkan bukti transfernya. Mohon segera diproses. Terima kasih!`;
 
-            // Buka WhatsApp
+            // Buka WhatsApp (ANTI POP-UP BLOCKER PAKAI WINDOW.LOCATION)
             const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
-            window.open(waUrl, '_blank');
+            window.location.href = waUrl;
             
             // Tutup modal pop-up setelah diarahkan ke WA
             try { closeModal('upgradeModal'); } catch(e){}
