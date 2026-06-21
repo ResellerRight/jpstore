@@ -132,8 +132,6 @@
             </div>
         </div>
 
-        <!-- KATEGORI FILTER -->
-        <div id="categoryFilterContainer" class="flex overflow-x-auto gap-2 mb-8 pb-2 hide-scrollbar snap-x hidden">
         <!-- KATEGORI FILTER (UPDATE BARU) -->
         <div id="categoryFilterContainer" class="flex overflow-x-auto gap-2 mb-6 pb-2 hide-scrollbar snap-x hidden">
             <!-- Diisi dari JS -->
@@ -834,7 +832,6 @@
         }
 
         // ==========================================
-        // MODAL DETAIL PRODUK (DENGAN VARIAN)
         // MODAL DETAIL PRODUK
         // ==========================================
         function openProductDetail(id) {
@@ -1264,12 +1261,14 @@
                 fd.append('subtotal', posSubtotal); 
                 
                 const ongkirId = document.getElementById('coOngkir') ? document.getElementById('coOngkir').value : '';
-                const res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: fd 
-                }); 
+                fd.append('id_ongkir', ongkirId); 
+                const kuponCode = document.getElementById('coKuponCode') ? document.getElementById('coKuponCode').value.trim() : '';
+                fd.append('kode_kupon', kuponCode);
+                fd.append('pajak_ppn', posPpnVal);
+                fd.append('biaya_layanan', posServiceVal);
+
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd }); 
                 const json = await res.json();
-                
                 let orderId = json.order_id || "ORD-" + Math.floor(Math.random() * 100000);
 
                 // SIMPAN KE LOCAL STORAGE JIKA BERHASIL MENGIRIM PESANAN
@@ -1282,9 +1281,7 @@
                 } catch(e) {}
 
                 let waNumber = String(storeData.wa_number || ""); 
-                if (waNumber.startsWith('0')) {
-                    waNumber = '62' + waNumber.substring(1);
-                }
+                if (waNumber.startsWith('0')) waNumber = '62' + waNumber.substring(1);
                 
                 let areaOngkirText = "";
                 if(ongkirId) { 
