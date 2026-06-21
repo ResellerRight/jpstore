@@ -134,12 +134,12 @@
 
         <!-- KATEGORI FILTER -->
         <div id="categoryFilterContainer" class="flex overflow-x-auto gap-2 mb-8 pb-2 hide-scrollbar snap-x hidden">
+        <!-- KATEGORI FILTER (UPDATE BARU) -->
+        <div id="categoryFilterContainer" class="flex overflow-x-auto gap-2 mb-6 pb-2 hide-scrollbar snap-x hidden">
             <!-- Diisi dari JS -->
         </div>
 
-        <!-- ========================================== -->
         <!-- SECTION FLASH SALE / PROMO (HORIZONTAL SCROLL) -->
-        <!-- ========================================== -->
         <div id="promoSection" class="hidden mb-10">
             <div class="flex items-center gap-3 mb-4">
                 <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
@@ -159,7 +159,7 @@
             </h3>
         </div>
 
-        <!-- Product Grid Reguler -->
+        <!-- Product Grid -->
         <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <!-- Isi dari JS -->
         </div>
@@ -428,7 +428,7 @@
         };
         
         // SCRIPT URL (PASTIKAN SUDAH DIGANTI DENGAN DEPLOY APP SCRIPT ANDA)
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5b-MqpGYCHgQzQtQrf2lIOoWs71CAARJBnRL4ALiJwxI5jbkNJ680zzXgv-KWWRES/exec';
+        var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2KfFunnBQ0QI-R9hmwP4dfn33dkEiR8389V5s1QGo-JI8zVchlB6sLmToWM53xmJGrQ/exec';
 
         let storeData = {};
         let products = [];
@@ -520,7 +520,7 @@
                 document.getElementById('storeBanner').classList.remove('hidden');
             }
 
-            // 1. FITUR TEKS BERJALAN (ANNOUNCEMENT BAR)
+            // FITUR TEKS BERJALAN (ANNOUNCEMENT BAR)
             if (storeData.announcement_text && storeData.announcement_text.trim() !== '') {
                 const annBar = document.getElementById('announcementBar');
                 const annContent = document.getElementById('announcementContent');
@@ -534,7 +534,7 @@
                 }
             }
 
-            // Render Social Media
+            // Render Social Media (FIXED BRAND ICONS)
             const smContainer = document.getElementById('footerSocialMedia');
             if (storeData.social_media && storeData.social_media !== '[]') {
                 try {
@@ -677,12 +677,12 @@
         }
 
         // ==========================================
-        // FILTER KATEGORI (Menampilkan Hirarki Sub-Kategori)
+        // FILTER KATEGORI
         // ==========================================
         function renderCategoryFilter() {
             const container = document.getElementById('categoryFilterContainer');
             if (globalCategories.length === 0) {
-                container.classList.add('hidden');
+                container.classList.add('hidden'); // Sembunyikan kalau gak ada kategori aktif
                 return;
             } else {
                 container.classList.remove('hidden');
@@ -690,9 +690,9 @@
             
             let html = `<button onclick="setCategory('')" id="cat-all" class="cat-btn snap-start px-4 py-2 bg-emerald-500 text-white rounded-full text-xs font-bold whitespace-nowrap shadow-sm transition-colors border border-emerald-500">Semua Produk</button>`;
             
+            // Sort berdasarkan sort_order
             const sortedCats = [...globalCategories].sort((a,b) => a.sort - b.sort);
             sortedCats.forEach(c => {
-                // LOGIKA BARU: Tambah simbol ↳ untuk subkategori
                 let prefix = c.parent_id ? '↳ ' : '';
                 html += `<button onclick="setCategory('${c.id}')" id="cat-${c.id}" class="cat-btn snap-start px-4 py-2 bg-white text-slate-600 rounded-full text-xs font-bold whitespace-nowrap shadow-sm transition-colors border border-slate-200 hover:border-emerald-300 hover:text-emerald-600">${prefix}${c.name}</button>`;
             });
@@ -726,9 +726,6 @@
             renderProductGrid(filteredList);
         }
 
-        // ==========================================
-        // 2. RENDER GRID PRODUK & FLASH SALE SECTION
-        // ==========================================
         function createProductCardHTML(p, isPromoCard = false) {
             const imgUrl = p.img || `https://placehold.co/300x300/e2e8f0/64748b?text=${p.name.charAt(0)}`;
             
@@ -740,15 +737,18 @@
             let hasVariant = false; 
             try { 
                 let vars = JSON.parse(p.variants || '[]'); 
-                if(vars.length > 0) hasVariant = true; 
-            } catch(e) {}
+                if(vars.length > 0) {
+                    hasVariant = true; 
+                }
+            } catch(e) {
+                console.error("Error parse variant saat render", e);
+            }
             
             let variantBadgeHtml = '';
             if (hasVariant) {
                 variantBadgeHtml = `<div class="absolute bottom-2 left-2 bg-slate-900/70 backdrop-blur text-white text-[9px] font-bold px-2 py-0.5 rounded flex items-center gap-1 shadow-sm"><i data-lucide="layers" class="w-3 h-3"></i> Varian</div>`;
             }
 
-            // Jika dipanggil untuk section Promo, pakai ukuran lebar fix (horizontal scroll friendly)
             const cardClass = isPromoCard 
                 ? "snap-start shrink-0 w-40 sm:w-48 bg-white rounded-2xl border border-orange-100 shadow-md overflow-hidden flex flex-col group relative cursor-pointer hover:shadow-lg transition-all duration-300 ring-1 ring-orange-50"
                 : "bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col group relative cursor-pointer hover:shadow-lg transition-all duration-300";
@@ -778,6 +778,9 @@
             `;
         }
 
+        // ==========================================
+        // RENDER GRID PRODUK
+        // ==========================================
         function renderProductGrid(list) {
             const grid = document.getElementById('productGrid');
             const promoSection = document.getElementById('promoSection');
@@ -791,13 +794,12 @@
                         <p class="text-sm font-medium text-slate-500">Produk tidak ditemukan.</p>
                     </div>
                 `;
-                promoSection.classList.add('hidden');
-                regTitle.classList.add('hidden');
+                if(promoSection) promoSection.classList.add('hidden');
+                if(regTitle) regTitle.classList.add('hidden');
                 refreshIcons(); 
                 return;
             }
 
-            // Memisahkan Produk Promo & Reguler
             const promoItems = [];
             const regularItems = [];
 
@@ -805,7 +807,6 @@
                 let isPromo = false;
                 if(p.badge) {
                     const b = p.badge.toLowerCase();
-                    // Seleksi otomatis berdasarkan kata kunci diskon di dalam badge
                     if(b.includes('promo') || b.includes('diskon') || b.includes('sale') || b.includes('%') || b.includes('terlaris') || b.includes('hot')) {
                         isPromo = true;
                     }
@@ -814,20 +815,18 @@
                 else regularItems.push(p);
             });
 
-            // Render Promo Slider
-            if(promoItems.length > 0) {
+            if(promoItems.length > 0 && promoSection && promoGrid) {
                 promoSection.classList.remove('hidden');
                 promoGrid.innerHTML = promoItems.map(p => createProductCardHTML(p, true)).join('');
-            } else {
+            } else if(promoSection) {
                 promoSection.classList.add('hidden');
             }
 
-            // Render Reguler Grid
             if(regularItems.length > 0) {
-                regTitle.classList.remove('hidden');
+                if(regTitle) regTitle.classList.remove('hidden');
                 grid.innerHTML = regularItems.map(p => createProductCardHTML(p, false)).join('');
             } else {
-                regTitle.classList.add('hidden');
+                if(regTitle) regTitle.classList.add('hidden');
                 grid.innerHTML = '';
             }
             
@@ -835,6 +834,7 @@
         }
 
         // ==========================================
+        // MODAL DETAIL PRODUK (DENGAN VARIAN)
         // MODAL DETAIL PRODUK
         // ==========================================
         function openProductDetail(id) {
@@ -1069,7 +1069,7 @@
         function toggleCart() {
             if (cartModal.classList.contains('hidden')) {
                 updateCartUI(); 
-                
+
                 // MENGAMBIL DATA PEMBELI DARI LOCAL STORAGE (AUTO-FILL)
                 try {
                     const savedBuyer = JSON.parse(localStorage.getItem('jualanplus_buyer_info'));
@@ -1078,7 +1078,6 @@
                         const bWa = document.getElementById('buyerWa');
                         const bNotes = document.getElementById('buyerNotes');
                         
-                        // Isi jika form masih kosong
                         if(bName && !bName.value) bName.value = savedBuyer.name || '';
                         if(bWa && !bWa.value) bWa.value = savedBuyer.wa || '';
                         if(bNotes && !bNotes.value) bNotes.value = savedBuyer.notes || '';
@@ -1265,14 +1264,12 @@
                 fd.append('subtotal', posSubtotal); 
                 
                 const ongkirId = document.getElementById('coOngkir') ? document.getElementById('coOngkir').value : '';
-                fd.append('id_ongkir', ongkirId); 
-                const kuponCode = document.getElementById('coKuponCode') ? document.getElementById('coKuponCode').value.trim() : '';
-                fd.append('kode_kupon', kuponCode);
-                fd.append('pajak_ppn', posPpnVal);
-                fd.append('biaya_layanan', posServiceVal);
-
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd }); 
+                const res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: fd 
+                }); 
                 const json = await res.json();
+                
                 let orderId = json.order_id || "ORD-" + Math.floor(Math.random() * 100000);
 
                 // SIMPAN KE LOCAL STORAGE JIKA BERHASIL MENGIRIM PESANAN
@@ -1285,7 +1282,9 @@
                 } catch(e) {}
 
                 let waNumber = String(storeData.wa_number || ""); 
-                if (waNumber.startsWith('0')) waNumber = '62' + waNumber.substring(1);
+                if (waNumber.startsWith('0')) {
+                    waNumber = '62' + waNumber.substring(1);
+                }
                 
                 let areaOngkirText = "";
                 if(ongkirId) { 
