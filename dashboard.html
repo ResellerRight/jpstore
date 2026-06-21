@@ -1597,13 +1597,15 @@
                 }
             } catch(e) { console.error("Error parse tutorial JSON:", e); }
             
-            // Render input hanya jika dia Admin
+            // Render form input hanya jika dia Admin
             if (currentUser.role === 'admin') {
                 if(tutData.length === 0) {
                     if(tutContainer) addTutorialInput(); 
                 } else {
                     if(tutContainer) tutData.forEach(link => addTutorialInput(link));
                 }
+                // Langsung render ke player jika Admin
+                renderTutorialPlaylist(tutData);
             }
 
             // SETUP SOCIAL MEDIA INPUTS
@@ -1809,12 +1811,14 @@
                 if (setAppModeEl) setAppModeEl.value = appSettings.app_mode || 'saas';
                 if (setShowLandingEl) setShowLandingEl.value = appSettings.show_landing_page || 'on';
 
-                // LOGIKA BARU: Render Playlist Video dari Data Super Admin
-                try {
-                    let adminTutData = JSON.parse(appSettings.admin_tutorial || '[]');
-                    renderTutorialPlaylist(adminTutData);
-                } catch (e) {
-                    renderTutorialPlaylist([]);
+                // Render Playlist Video dari Data Super Admin (Bila yang login bukan admin)
+                if (currentUser && currentUser.role !== 'admin') {
+                    try {
+                        let adminTutData = JSON.parse(appSettings.admin_tutorial || '[]');
+                        renderTutorialPlaylist(adminTutData);
+                    } catch (e) {
+                        renderTutorialPlaylist([]);
+                    }
                 }
             }
             renderNavigation();
