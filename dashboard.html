@@ -905,29 +905,26 @@
                         <!-- FITUR SATUAN DITAMBAHKAN DI SINI -->
                         <div>
                             <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Satuan Produk</label>
-                            <!-- Diubah dari <select> menjadi <input list="..."> agar bisa diketik manual -->
-                            <input type="text" id="prodSatuan" list="satuanList" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm bg-white" placeholder="Ketik atau pilih...">
-                            <datalist id="satuanList">
-                                <option value="pcs">
-                                <option value="pack">
-                                <option value="box">
-                                <option value="kg">
-                                <option value="porsi">
-                                <option value="lusin">
-                                <option value="unit">
-                            </datalist>
+                            <select id="prodSatuan" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm bg-white">
+                                <option value="pcs">Pcs</option>
+                                <option value="pack">Pack</option>
+                                <option value="box">Box</option>
+                                <option value="kg">Kg</option>
+                                <option value="porsi">Porsi</option>
+                                <option value="lusin">Lusin</option>
+                                <option value="unit">Unit</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Badge (Opsional)</label>
-                            <!-- Diubah dari <select> menjadi <input list="..."> agar bisa diketik manual -->
-                            <input type="text" id="prodBadge" list="badgeList" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm bg-white text-emerald-600 font-medium" placeholder="Ketik atau pilih...">
-                            <datalist id="badgeList">
-                                <option value="Promo">
-                                <option value="Terlaris">
-                                <option value="Diskon 50%">
-                                <option value="Exclusive">
-                                <option value="Pre-Order">
-                            </datalist>
+                            <select id="prodBadge" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm bg-white text-emerald-600 font-medium">
+                                <option value="">-- Kosong --</option>
+                                <option value="Promo">Promo</option>
+                                <option value="Terlaris">Terlaris</option>
+                                <option value="Diskon 50%">Diskon 50%</option>
+                                <option value="Exclusive">Exclusive</option>
+                                <option value="Pre-Order">Pre-Order</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -976,20 +973,10 @@
                 </div>
                 <form id="categoryForm" class="p-5 sm:p-6 space-y-4 flex-1 overflow-y-auto">
                     <input type="hidden" id="catId" value="">
-                    
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nama Kategori</label>
                         <input type="text" id="catName" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm">
                     </div>
-                    
-                    <div>
-                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Induk Kategori (Opsional)</label>
-                        <select id="catParent" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm bg-white">
-                            <option value="">-- Jadikan Kategori Utama --</option>
-                            </select>
-                        <p class="text-[10px] text-slate-500 mt-1">Pilih induk jika ini adalah Sub-Kategori.</p>
-                    </div>
-
                     <div class="grid grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Urutan</label>
@@ -1397,9 +1384,9 @@
             sidebarOverlay.classList.toggle('hidden');
         }
 
-        mobileMenuBtn?.addEventListener('click', toggleSidebar);
-        closeSidebarBtn?.addEventListener('click', toggleSidebar);
-        sidebarOverlay?.addEventListener('click', toggleSidebar);
+        if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleSidebar);
+        if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
+        if(sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
 
         const formatRupiah = (angka) => {
             return new Intl.NumberFormat('id-ID', { 
@@ -2129,41 +2116,36 @@
                 return;
             }
 
-            // LOGIKA ANTI-CRASH (Bypass Error JSON Parse)
             let planName = "Paket Upgrade";
             let planPrice = 0;
 
             try {
-                // Coba ambil data jika format value di HTML adalah JSON
                 const plan = JSON.parse(selectedOpt.value);
                 planName = plan.name || "Paket Upgrade";
                 planPrice = plan.price || 0;
             } catch (e) {
-                // JIKA GAGAL (Karena value cuma teks ID), ambil teks langsung dari tampilan web!
                 try {
                     const labelContainer = selectedOpt.closest('label');
                     planName = labelContainer?.querySelector('div.font-bold')?.innerText || "Paket Upgrade";
 
-                    // Ambil angka harganya saja
                     const priceText = labelContainer?.querySelector('span.text-orange-600')?.innerText || "0";
                     planPrice = priceText.replace(/[^0-9]/g, '');
                 } catch (err) {
                     console.log("Fallback baca DOM gagal", err);
                 }
             }
-            
-            // FIX: Hapus "window." karena variabelnya pakai "let", jadi cukup panggil langsung.
+
+            // FIX: Hapus "window." agar variabel terbaca dengan benar
             let waNumber = upgradeAdminInfo?.wa_number;
-            
-            if(!waNumber) {
+
+            if (!waNumber) {
                 alert("Gagal: Admin Pusat belum mengatur Nomor WhatsApp penerima pembayaran!");
                 return;
             }
-            
-            // Bersihkan nomor WA (Hapus spasi, strip, dll)
+
+            // Bersihkan nomor WA
             waNumber = String(waNumber).replace(/[^0-9]/g, '');
 
-            // Format nomor HP agar valid untuk wa.me
             if (waNumber.startsWith('0')) {
                 waNumber = '62' + waNumber.substring(1);
             }
@@ -2171,8 +2153,7 @@
             if (!waNumber.startsWith('62')) {
                 waNumber = '62' + waNumber;
             }
-            
-            // Ambil nama toko dan ID dari session browser dengan aman
+
             let sessionUser = {};
             try {
                 sessionUser = JSON.parse(localStorage.getItem('iMersWA_User')) || {};
@@ -2184,21 +2165,18 @@
             const tokoName = sessionUser.nama_toko || 'Toko Saya';
             const tokoId = sessionUser.id || '-';
 
-            // Menyusun pesan WhatsApp
             let message = `Halo Admin, saya pemilik toko *${tokoName}* (ID: ${tokoId}).\n\n`;
             message += `Saya ingin melakukan konfirmasi pembayaran untuk Upgrade Akun:\n`;
             message += `Paket: *${planName}*\n`;
             message += `Harga: *Rp ${parseInt(planPrice || 0).toLocaleString('id-ID')}*\n\n`;
             message += `Berikut saya lampirkan bukti transfernya. Mohon segera diproses. Terima kasih!`;
 
-            // Buka WhatsApp (ANTI POP-UP BLOCKER PAKAI WINDOW.LOCATION)
             const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
-            
+
             console.log("WA URL:", waUrl);
-            
+
             window.location.href = waUrl;
             
-            // Tutup modal pop-up setelah diarahkan ke WA
             try { closeModal('upgradeModal'); } catch(e){}
         }
 
@@ -2413,28 +2391,17 @@
                 return; 
             }
             
-            tbody.innerHTML = globalCategories.map(c => {
-                // LOGIKA BARU: Cek apakah dia punya Induk (Sub-Kategori)
-                let parentName = '';
-                if (c.parent_id) {
-                    const parentCat = globalCategories.find(p => p.id === c.parent_id);
-                    if (parentCat) {
-                        parentName = `<br><span class="text-[10px] text-emerald-500 font-medium">↳ Sub dari: ${parentCat.name}</span>`;
-                    }
-                }
-
-                return `
+            tbody.innerHTML = globalCategories.map(c => `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
                     <td class="px-4 sm:px-6 py-3 font-mono text-xs sm:text-sm">${c.sort}</td>
-                    <td class="px-4 sm:px-6 py-3 font-bold text-slate-800 text-xs sm:text-sm">${c.name} ${parentName}</td>
+                    <td class="px-4 sm:px-6 py-3 font-bold text-slate-800 text-xs sm:text-sm">${c.name}</td>
                     <td class="px-4 sm:px-6 py-3">${String(c.is_active)==='true' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-[10px] font-bold">AKTIF</span>' : '<span class="text-slate-500 bg-slate-100 px-2 py-1 rounded text-[10px] font-bold">MATI</span>'}</td>
                     <td class="px-4 sm:px-6 py-3 text-right">
                         <button onclick="openCategoryModal('${c.id}')" class="text-blue-500 hover:text-blue-700 text-xs sm:text-sm font-medium mr-2 sm:mr-3">Edit</button>
                         <button onclick="deleteCategory('${c.id}')" class="text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium">Hapus</button>
                     </td>
                 </tr>
-                `;
-            }).join('');
+            `).join('');
         }
 
         // Render Kupon Table
@@ -2671,7 +2638,7 @@
             document.getElementById('productModal').classList.remove('hidden');
         }
 
-        document.getElementById('productForm')?.addEventListener('submit', async (e) => {
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const btnText = document.getElementById('btnSaveProdText');
@@ -2751,26 +2718,12 @@
             document.getElementById('catId').value = ''; 
             document.getElementById('categoryModalTitle').innerText = 'Tambah Kategori';
             
-            // LOGIKA BARU: Render Dropdown Induk Kategori
-            const parentSelect = document.getElementById('catParent');
-            if (parentSelect) {
-                let parentOpts = '<option value="">-- Jadikan Kategori Utama --</option>';
-                globalCategories.forEach(c => {
-                    // Jangan tampilkan kategori ini sendiri sebagai pilihan induknya (mencegah infinite loop)
-                    if (c.id !== id && String(c.is_active) === 'true') {
-                        parentOpts += `<option value="${c.id}">${c.name}</option>`;
-                    }
-                });
-                parentSelect.innerHTML = parentOpts;
-            }
-
             if (id) {
                 const c = globalCategories.find(x => x.id === id);
                 if (c) {
                     document.getElementById('categoryModalTitle').innerText = 'Edit Kategori';
                     document.getElementById('catId').value = c.id; 
                     document.getElementById('catName').value = c.name; 
-                    if(document.getElementById('catParent')) document.getElementById('catParent').value = c.parent_id || ''; 
                     document.getElementById('catSort').value = c.sort; 
                     document.getElementById('catStatus').value = c.is_active; 
                 }
@@ -2778,7 +2731,7 @@
             document.getElementById('categoryModal').classList.remove('hidden');
         }
 
-        document.getElementById('categoryForm')?.addEventListener('submit', async(e) => {
+        document.getElementById('categoryForm').addEventListener('submit', async(e) => {
             e.preventDefault(); 
             const isEdit = document.getElementById('catId').value !== '';
             
@@ -2788,8 +2741,6 @@
             const payload = { 
                 id_user_toko: targetStoreId, 
                 nama_kategori: document.getElementById('catName').value, 
-                // LOGIKA BARU: Tangkap nilai Induk Kategori
-                parent_id: document.getElementById('catParent') ? document.getElementById('catParent').value : '',
                 sort_order: document.getElementById('catSort').value, 
                 is_active: document.getElementById('catStatus').value 
             };
@@ -2810,6 +2761,7 @@
                 alert(res.message);
             }
         });
+
         async function deleteCategory(id) { 
             if (!confirm('Yakin hapus kategori ini?')) return; 
             const res = await apiCall('delete_category', {id_kategori:id, id_user_toko: targetStoreId}); 
@@ -2842,7 +2794,7 @@
             document.getElementById('couponModal').classList.remove('hidden');
         }
 
-        document.getElementById('couponForm')?.addEventListener('submit', async(e) => {
+        document.getElementById('couponForm').addEventListener('submit', async(e) => {
             e.preventDefault(); 
             const isEdit = document.getElementById('cupId').value !== '';
             
@@ -2904,7 +2856,7 @@
             document.getElementById('shippingModal').classList.remove('hidden');
         }
 
-        document.getElementById('shippingForm')?.addEventListener('submit', async(e) => {
+        document.getElementById('shippingForm').addEventListener('submit', async(e) => {
             e.preventDefault(); 
             const isEdit = document.getElementById('shpId').value !== '';
             
@@ -2996,7 +2948,7 @@
             document.getElementById('userModal').classList.remove('hidden');
         }
 
-        document.getElementById('userForm')?.addEventListener('submit', async (e) => {
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const btnText = document.getElementById('btnSaveUserText');
@@ -3070,7 +3022,7 @@
         }
 
         // --- 6. SETTINGS & PASSWORD LOGIC ---
-        document.getElementById('settingForm')?.addEventListener('submit', async (e) => {
+        document.getElementById('settingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const btn = document.getElementById('btnSaveSetText');
@@ -3158,7 +3110,7 @@
             }
         });
 
-        document.getElementById('passwordForm')?.addEventListener('submit', async (e) => {
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const btn = document.getElementById('btnSavePassText');
