@@ -976,10 +976,20 @@
                 </div>
                 <form id="categoryForm" class="p-5 sm:p-6 space-y-4 flex-1 overflow-y-auto">
                     <input type="hidden" id="catId" value="">
+                    
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nama Kategori</label>
                         <input type="text" id="catName" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm">
                     </div>
+                    
+                    <div>
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Induk Kategori (Opsional)</label>
+                        <select id="catParent" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-emerald-500 text-sm bg-white">
+                            <option value="">-- Jadikan Kategori Utama --</option>
+                            </select>
+                        <p class="text-[10px] text-slate-500 mt-1">Pilih induk jika ini adalah Sub-Kategori.</p>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Urutan</label>
@@ -2403,17 +2413,28 @@
                 return; 
             }
             
-            tbody.innerHTML = globalCategories.map(c => `
+            tbody.innerHTML = globalCategories.map(c => {
+                // LOGIKA BARU: Cek apakah dia punya Induk (Sub-Kategori)
+                let parentName = '';
+                if (c.parent_id) {
+                    const parentCat = globalCategories.find(p => p.id === c.parent_id);
+                    if (parentCat) {
+                        parentName = `<br><span class="text-[10px] text-emerald-500 font-medium">↳ Sub dari: ${parentCat.name}</span>`;
+                    }
+                }
+
+                return `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
                     <td class="px-4 sm:px-6 py-3 font-mono text-xs sm:text-sm">${c.sort}</td>
-                    <td class="px-4 sm:px-6 py-3 font-bold text-slate-800 text-xs sm:text-sm">${c.name}</td>
+                    <td class="px-4 sm:px-6 py-3 font-bold text-slate-800 text-xs sm:text-sm">${c.name} ${parentName}</td>
                     <td class="px-4 sm:px-6 py-3">${String(c.is_active)==='true' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-[10px] font-bold">AKTIF</span>' : '<span class="text-slate-500 bg-slate-100 px-2 py-1 rounded text-[10px] font-bold">MATI</span>'}</td>
                     <td class="px-4 sm:px-6 py-3 text-right">
                         <button onclick="openCategoryModal('${c.id}')" class="text-blue-500 hover:text-blue-700 text-xs sm:text-sm font-medium mr-2 sm:mr-3">Edit</button>
                         <button onclick="deleteCategory('${c.id}')" class="text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium">Hapus</button>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Render Kupon Table
@@ -2730,12 +2751,26 @@
             document.getElementById('catId').value = ''; 
             document.getElementById('categoryModalTitle').innerText = 'Tambah Kategori';
             
+            // LOGIKA BARU: Render Dropdown Induk Kategori
+            const parentSelect = document.getElementById('catParent');
+            if (parentSelect) {
+                let parentOpts = '<option value="">-- Jadikan Kategori Utama --</option>';
+                globalCategories.forEach(c => {
+                    // Jangan tampilkan kategori ini sendiri sebagai pilihan induknya (mencegah infinite loop)
+                    if (c.id !== id && String(c.is_active) === 'true') {
+                        parentOpts += `<option value="${c.id}">${c.name}</option>`;
+                    }
+                });
+                parentSelect.innerHTML = parentOpts;
+            }
+
             if (id) {
                 const c = globalCategories.find(x => x.id === id);
                 if (c) {
                     document.getElementById('categoryModalTitle').innerText = 'Edit Kategori';
                     document.getElementById('catId').value = c.id; 
                     document.getElementById('catName').value = c.name; 
+                    if(document.getElementById('catParent')) document.getElementById('catParent').value = c.parent_id || ''; 
                     document.getElementById('catSort').value = c.sort; 
                     document.getElementById('catStatus').value = c.is_active; 
                 }
@@ -2753,6 +2788,8 @@
             const payload = { 
                 id_user_toko: targetStoreId, 
                 nama_kategori: document.getElementById('catName').value, 
+                // LOGIKA BARU: Tangkap nilai Induk Kategori
+                parent_id: document.getElementById('catParent') ? document.getElementById('catParent').value : '',
                 sort_order: document.getElementById('catSort').value, 
                 is_active: document.getElementById('catStatus').value 
             };
@@ -2773,7 +2810,6 @@
                 alert(res.message);
             }
         });
-
         async function deleteCategory(id) { 
             if (!confirm('Yakin hapus kategori ini?')) return; 
             const res = await apiCall('delete_category', {id_kategori:id, id_user_toko: targetStoreId}); 
