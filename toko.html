@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Judul bawaan dibikin netral -->
     <title>Belanja Online</title>
     
-    <!-- FAVICON DEFAULT (Bisa diganti dengan link logo default sistem lo) -->
+    <!-- FAVICON DEFAULT -->
     <link id="dynamicFavicon" rel="icon" type="image/png" href="https://placehold.co/32x32/10b981/ffffff?text=S">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Variabel Tema Dinamis, defaultnya warna slate-50 */
+        /* Variabel Tema Dinamis */
         :root {
             --theme-bg: #f8fafc;
         }
@@ -429,7 +428,7 @@
         };
         
         // SCRIPT URL (PASTIKAN SUDAH DIGANTI DENGAN DEPLOY APP SCRIPT ANDA)
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2KfFunnBQ0QI-R9hmwP4dfn33dkEiR8389V5s1QGo-JI8zVchlB6sLmToWM53xmJGrQ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5b-MqpGYCHgQzQtQrf2lIOoWs71CAARJBnRL4ALiJwxI5jbkNJ680zzXgv-KWWRES/exec';
 
         let storeData = {};
         let products = [];
@@ -693,6 +692,7 @@
             
             const sortedCats = [...globalCategories].sort((a,b) => a.sort - b.sort);
             sortedCats.forEach(c => {
+                // LOGIKA BARU: Tambah simbol ↳ untuk subkategori
                 let prefix = c.parent_id ? '↳ ' : '';
                 html += `<button onclick="setCategory('${c.id}')" id="cat-${c.id}" class="cat-btn snap-start px-4 py-2 bg-white text-slate-600 rounded-full text-xs font-bold whitespace-nowrap shadow-sm transition-colors border border-slate-200 hover:border-emerald-300 hover:text-emerald-600">${prefix}${c.name}</button>`;
             });
